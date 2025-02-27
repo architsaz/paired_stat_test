@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-def read_table(file_path, expected_cols=15):
+def read_table(file_path,data_name, expected_cols=16):
     """Reads the data file and structures it into a dictionary."""
     with open(file_path, 'r') as f:
         header = f.readline().strip().split()
@@ -23,10 +23,12 @@ def read_table(file_path, expected_cols=15):
         raise ValueError(f"Missing required columns: {required_cols - set(df.columns)}")
 
     # Replace '0' with NaN in specific fields
-    fields_to_set_nan = {"stat_yel", "stat_wht", "stat_red", "stat_rupt", "stat_bleb.0", "stat_bleb.1"}
+    fields_to_set_nan = {"yel_"+data_name, "wht_"+data_name, "red_"+data_name, "rupt_"+data_name, "bleb.0_"+data_name, "bleb.1_"+data_name, "all_bleb_"+data_name}
     for field in fields_to_set_nan:
         if field in df.columns:
             df[field] = df[field].replace("0.00", np.nan)
+
+    print(df.head())        
 
     # Pivot table
     structured_data = {}
