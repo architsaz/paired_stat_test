@@ -14,7 +14,7 @@ file_path = path+file_name
 data = read_table(file_path,data_name)
 
 # Define the fields to analyze
-fields_to_analyze = ["aneu_"+data_name, "dom_"+data_name, "bod_"+data_name, "nek_"+data_name, "part_"+data_name, "press_"+data_name,"all_bleb_"+data_name, "red_"+data_name, "yel_"+data_name, "wht_"+data_name, "rupt_"+data_name]
+regions_to_analyze = ["aneu_"+data_name, "dom_"+data_name, "bod_"+data_name, "nek_"+data_name, "part_"+data_name, "press_"+data_name,"all_bleb_"+data_name, "red_"+data_name, "yel_"+data_name, "wht_"+data_name, "rupt_"+data_name]
 
 # Store results
 all_results = []
@@ -23,13 +23,13 @@ all_results = []
 #indices_to_analyze = ['mean', 'max', 'min']  # Add your desired indices
 indices_to_analyze = ['1', '2', '3' , '4', '5', '6']  # Add your desired indices
 
-for field in fields_to_analyze:
+for region in regions_to_analyze:
     stats_data = {index: {'msa1': [], 'msa2': []} for index in indices_to_analyze}
 
     for case_name, case_data in data.items():
         for index in indices_to_analyze:
-            msa1_value = case_data['msa.1'].get(index, {}).get(field, np.nan)
-            msa2_value = case_data['msa.2'].get(index, {}).get(field, np.nan)
+            msa1_value = case_data['msa.1'].get(index, {}).get(region, np.nan)
+            msa2_value = case_data['msa.2'].get(index, {}).get(region, np.nan)
 
             msa1_value = float(msa1_value) if isinstance(msa1_value, (int, float, str)) else None
             msa2_value = float(msa2_value) if isinstance(msa2_value, (int, float, str)) else None
@@ -45,8 +45,7 @@ for field in fields_to_analyze:
     for index in indices_to_analyze:
         msa1_array = np.array(stats_data[index]['msa1'], dtype=np.float64)
         msa2_array = np.array(stats_data[index]['msa2'], dtype=np.float64)
-
-        result = perform_stat_tests(msa1_array, msa2_array, f'{field} {index}')
+        result = perform_stat_tests(msa1_array, msa2_array, f'{region} {index}')
         all_results.append(result)
 
 # Save results

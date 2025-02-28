@@ -39,15 +39,30 @@ def perform_stat_tests(msa1, msa2, label):
 
     # Compute differences
     data_diff = msa2 - msa1
+    # Check if all differences are zero
+    if np.all(data_diff == 0):
+        print(f"Zero differences found for {label}. Skipping Paired Statistic test.")
+        return {
+            'Comparison': label,
+            'Num Cases': len(msa1),
+            'Shapiro-Wilk test p-value': None,
+            'Test used': None,
+            'Comparison test p-value': None,
+            "Effect Size": None,
+            "Effect Size Interpretation": None
+        }
 
     # Interpret significance
     alpha = 0.05  # Common significance level
 
     # Check normality (only if at least 3 samples)
-    shapiro_p = stats.shapiro(data_diff).pvalue if len(data_diff) >= 3 else np.nan
+    shapiro_p_diff = stats.shapiro(data_diff).pvalue if len(data_diff) >= 3 else np.nan
+    shapiro_p_msa1 = stats.shapiro(msa1).pvalue if len(msa1) >= 3 else np.nan
+    shapiro_p_msa2 = stats.shapiro(msa2).pvalue if len(msa2) >= 3 else np.nan
+    shapiro_p_min = min(shapiro_p_msa1,shapiro_p_msa2)
 
     # Choose appropriate test
-    if shapiro_p > 0.05:
+    if shapiro_p_min > 0.05 :
         test_stat, p_value = stats.ttest_rel(msa2, msa1)  # Paired t-test
         test_name = "Paired t-test"
         effect_size = cohen_d(msa2, msa1)  # Cohen's d for parametric test
@@ -73,7 +88,7 @@ def perform_stat_tests(msa1, msa2, label):
     return {
         'Comparison': label,
         'Num Cases': len(msa1),
-        'Shapiro-Wilk test p-value': shapiro_p,
+        'Shapiro-Wilk test p-value': shapiro_p_min,
         'Test used': test_name,
         'Comparison test p-value': p_value,
         'Effect Size': effect_size,

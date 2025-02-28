@@ -24,11 +24,18 @@ def read_table(file_path,data_name, expected_cols=16):
 
     # Replace '0' with NaN in specific fields
     fields_to_set_nan = {"yel_"+data_name, "wht_"+data_name, "red_"+data_name, "rupt_"+data_name, "bleb.0_"+data_name, "bleb.1_"+data_name, "all_bleb_"+data_name}
+    # Group by 'Casename' and 'Study' to check field values across groups
     for field in fields_to_set_nan:
         if field in df.columns:
-            df[field] = df[field].replace("0.00", np.nan)
+            # Ensure the field column is numeric
+            df[field] = pd.to_numeric(df[field], errors='coerce')
+            # Find rows where the values are close to 0.00
+            mask = df.groupby(["Casename", "Study"])[field].transform(lambda x: np.isclose(x, 0.00).all())
+            df.loc[mask, field] = np.nan
 
-    print(df.head())        
+
+    print(df.head())
+    df.to_csv("modified_data.csv", index=False)        
 
     # Pivot table
     structured_data = {}
